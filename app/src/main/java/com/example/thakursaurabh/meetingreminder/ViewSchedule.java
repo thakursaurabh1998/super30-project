@@ -4,11 +4,14 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class ViewSchedule extends AppCompatActivity {
+
+    private ListView listView;
+    private MeetingAdapter meetingAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,5 +26,9 @@ public class ViewSchedule extends AppCompatActivity {
             // Writing Contacts to log
             Log.d("TODOS: ", log);
         }
+
+        listView = findViewById(R.id.list);
+        meetingAdapter = new MeetingAdapter(this,meetings);
+        listView.setAdapter(meetingAdapter);
     }
 }

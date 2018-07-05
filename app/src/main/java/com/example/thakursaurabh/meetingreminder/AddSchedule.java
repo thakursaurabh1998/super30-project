@@ -1,5 +1,8 @@
 package com.example.thakursaurabh.meetingreminder;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.provider.AlarmClock;
 import android.support.v4.app.DialogFragment;
@@ -10,6 +13,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 public class AddSchedule extends AppCompatActivity {
@@ -28,9 +33,10 @@ public class AddSchedule extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Log.d("Insert: ", "Inserting .."+ topic.getText().toString()+duration.getText().toString());
-//                db.addMeeting(new Meeting(topic.getText().toString(), duration.getText().toString(),day+"/"+month+"/"+year, hourOfDay+":"+minute));
-                Log.d("Reading: ", "Reading all contacts.."+day+"/"+month+"/"+year);
-                Log.d("Reading: ", "Reading all contacts.."+hourOfDay+":"+minute);
+                db.addMeeting(new Meeting(topic.getText().toString(), duration.getText().toString(),day+"/"+month+"/"+year, hourOfDay+":"+minute));
+                Intent viewSchedule = new Intent(AddSchedule.this,ViewSchedule.class);
+                startActivity(viewSchedule);
+                finish();
             }
         });
         reminderBtn.setOnClickListener(new View.OnClickListener() {
@@ -52,6 +58,24 @@ public class AddSchedule extends AppCompatActivity {
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
+    }
+
+    public void setAlarmNotif(String message, int hour, int minutes){
+        Calendar cur_cal = new GregorianCalendar();
+        cur_cal.setTimeInMillis(System.currentTimeMillis());//set the current time and date for this calendar
+
+        Calendar cal = new GregorianCalendar();
+        cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        cal.set(Calendar.MINUTE, minute);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.DATE, day);
+        cal.set(Calendar.MONTH, month);
+        cal.set(Calendar.YEAR, year);
+        Intent intent = new Intent(this, AlarmBroadcastReceiver.class);
+        PendingIntent pintent = PendingIntent.getService(this, 0, intent, 0);
+        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 30*1000, pintent);
     }
 
     public void showDatePickerDialog(View v) {
