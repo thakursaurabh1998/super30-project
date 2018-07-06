@@ -14,6 +14,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -49,20 +51,31 @@ public class AddSchedule extends AppCompatActivity {
 //                createAlarm("TESTING",hourOfDay,minute);
                 Calendar calNow = Calendar.getInstance();
                 Calendar calSet = (Calendar) calNow.clone();
+//
+//                calSet.set(Calendar.DAY_OF_MONTH, day);
+//                calSet.set(Calendar.YEAR, year);
+//                calSet.set(Calendar.MONTH, month);
+//                calSet.set(Calendar.HOUR_OF_DAY, hourOfDay);
+//                calSet.set(Calendar.MINUTE, minute);
+//                calSet.set(Calendar.SECOND, 0);
+//                calSet.set(Calendar.MILLISECOND, 0);
+                calSet.setTimeInMillis(System.currentTimeMillis());
+                calSet.clear();
+                calSet.set(year,month,day,hourOfDay,minute);
 
-                calSet.set(Calendar.DAY_OF_MONTH, day);
-                calSet.set(Calendar.YEAR, year);
-                calSet.set(Calendar.MONTH, month);
-                calSet.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                calSet.set(Calendar.MINUTE, minute);
-                calSet.set(Calendar.SECOND, 0);
-                calSet.set(Calendar.MILLISECOND, 0);
+//                if(calSet.compareTo(calNow) <= 0){
+//                    //Today Set time passed, count to tomorrow
+//                    calSet.add(Calendar.DATE, 1);
+//                }
+                int year = calSet.get(Calendar.YEAR);
+                int month = calSet.get(Calendar.MONTH);      // 0 to 11
+                int day = calSet.get(Calendar.DAY_OF_MONTH);
+                int hour = calSet.get(Calendar.HOUR_OF_DAY);
+                int minute = calSet.get(Calendar.MINUTE);
+                int second = calSet.get(Calendar.SECOND);
 
-                if(calSet.compareTo(calNow) <= 0){
-                    //Today Set time passed, count to tomorrow
-                    calSet.add(Calendar.DATE, 1);
-                }
-
+                Log.d("TIMENOW: ",  year +" "+ month +" "+ day+" "+ hour +" "+ minute +" "+ second);
+//                Log.d("TIMENOW: ", " "+Calendar.getInstance()+)
                 setAlarm(calSet);
             }
         });
