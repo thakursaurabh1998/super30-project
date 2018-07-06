@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -20,6 +21,7 @@ import java.util.List;
 public class AddSchedule extends AppCompatActivity {
     static int day,month,year,hourOfDay,minute;
     DatabaseHandler db = DatabaseHandler.getInstance(this);
+    TextView textAlarmPrompt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +46,42 @@ public class AddSchedule extends AppCompatActivity {
             public void onClick(View view) {
                 // Inserting Contacts
                 Log.i("DATE",year+" "+month+" "+day);
-                createAlarm("TESTING",hourOfDay,minute);
+//                createAlarm("TESTING",hourOfDay,minute);
+                Calendar calNow = Calendar.getInstance();
+                Calendar calSet = (Calendar) calNow.clone();
+
+                calSet.set(Calendar.DAY_OF_MONTH, day);
+                calSet.set(Calendar.YEAR, year);
+                calSet.set(Calendar.MONTH, month);
+                calSet.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                calSet.set(Calendar.MINUTE, minute);
+                calSet.set(Calendar.SECOND, 0);
+                calSet.set(Calendar.MILLISECOND, 0);
+
+                if(calSet.compareTo(calNow) <= 0){
+                    //Today Set time passed, count to tomorrow
+                    calSet.add(Calendar.DATE, 1);
+                }
+
+                setAlarm(calSet);
             }
         });
     }
+
+    private void setAlarm(Calendar targetCal){
+//
+//        textAlarmPrompt.setText(
+//                "\n\n***\n"
+//                        + "Alarm is set@ " + targetCal.getTime() + "\n"
+//                        + "***\n");
+
+        Intent intent = new Intent(getBaseContext(), AlarmBroadcastReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getBaseContext(), 1, intent, 0);
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(), pendingIntent);
+
+    }
+
 
     public void createAlarm(String message, int hour, int minutes) {
         Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM)
@@ -58,24 +92,6 @@ public class AddSchedule extends AppCompatActivity {
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         }
-    }
-
-    public void setAlarmNotif(String message, int hour, int minutes){
-        Calendar cur_cal = new GregorianCalendar();
-        cur_cal.setTimeInMillis(System.currentTimeMillis());//set the current time and date for this calendar
-
-        Calendar cal = new GregorianCalendar();
-        cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        cal.set(Calendar.MINUTE, minute);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.set(Calendar.DATE, day);
-        cal.set(Calendar.MONTH, month);
-        cal.set(Calendar.YEAR, year);
-        Intent intent = new Intent(this, AlarmBroadcastReceiver.class);
-        PendingIntent pintent = PendingIntent.getService(this, 0, intent, 0);
-        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 30*1000, pintent);
     }
 
     public void showDatePickerDialog(View v) {
