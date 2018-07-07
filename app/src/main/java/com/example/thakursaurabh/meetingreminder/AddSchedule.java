@@ -1,5 +1,6 @@
 package com.example.thakursaurabh.meetingreminder;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.provider.AlarmClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -23,7 +25,6 @@ import java.util.List;
 public class AddSchedule extends AppCompatActivity {
     static int day,month,year,hourOfDay,minute;
     DatabaseHandler db = DatabaseHandler.getInstance(this);
-    TextView textAlarmPrompt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +37,19 @@ public class AddSchedule extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int flag = 0;
+
+                if(TextUtils.isEmpty(topic.getText().toString())){
+                    topic.setError("Topic Empty");
+                    flag=1;
+                }
+                if(TextUtils.isEmpty(duration.getText().toString())){
+                    duration.setError("Duration empty");
+                    flag=1;
+                }
+                if(flag==1) {
+                    return;
+                }
                 Log.d("Insert: ", "Inserting .."+ topic.getText().toString()+duration.getText().toString());
                 db.addMeeting(new Meeting(topic.getText().toString(), duration.getText().toString(),day+"/"+month+"/"+year, hourOfDay+":"+minute));
                 Intent viewSchedule = new Intent(AddSchedule.this,ViewSchedule.class);
@@ -46,27 +60,27 @@ public class AddSchedule extends AppCompatActivity {
         reminderBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Inserting Contacts
+                int flag = 0;
+
+                if(TextUtils.isEmpty(topic.getText().toString())){
+                    topic.setError("Topic Empty");
+                    flag=1;
+                }
+                if(TextUtils.isEmpty(duration.getText().toString())){
+                    duration.setError("Duration empty");
+                    flag=1;
+                }
+                if(flag==1) {
+                    return;
+                }
+
                 Log.i("DATE",year+" "+month+" "+day);
-//                createAlarm("TESTING",hourOfDay,minute);
                 Calendar calNow = Calendar.getInstance();
                 Calendar calSet = (Calendar) calNow.clone();
-//
-//                calSet.set(Calendar.DAY_OF_MONTH, day);
-//                calSet.set(Calendar.YEAR, year);
-//                calSet.set(Calendar.MONTH, month);
-//                calSet.set(Calendar.HOUR_OF_DAY, hourOfDay);
-//                calSet.set(Calendar.MINUTE, minute);
-//                calSet.set(Calendar.SECOND, 0);
-//                calSet.set(Calendar.MILLISECOND, 0);
-                calSet.setTimeInMillis(System.currentTimeMillis());
-                calSet.clear();
-                calSet.set(year,month,day,hourOfDay,minute);
 
-//                if(calSet.compareTo(calNow) <= 0){
-//                    //Today Set time passed, count to tomorrow
-//                    calSet.add(Calendar.DATE, 1);
-//                }
+                calSet.clear();
+                calSet.set(year,month-1,day,hourOfDay,minute);
+
                 int year = calSet.get(Calendar.YEAR);
                 int month = calSet.get(Calendar.MONTH);      // 0 to 11
                 int day = calSet.get(Calendar.DAY_OF_MONTH);
@@ -75,37 +89,22 @@ public class AddSchedule extends AppCompatActivity {
                 int second = calSet.get(Calendar.SECOND);
 
                 Log.d("TIMENOW: ",  year +" "+ month +" "+ day+" "+ hour +" "+ minute +" "+ second);
-//                Log.d("TIMENOW: ", " "+Calendar.getInstance()+)
+
                 setAlarm(calSet);
             }
         });
+
     }
 
     private void setAlarm(Calendar targetCal){
-//
-//        textAlarmPrompt.setText(
-//                "\n\n***\n"
-//                        + "Alarm is set@ " + targetCal.getTime() + "\n"
-//                        + "***\n");
 
-        Intent intent = new Intent(getBaseContext(), AlarmBroadcastReceiver.class);
+        Intent intent = new Intent(this, AlarmBroadcastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(getBaseContext(), 1, intent, 0);
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
         alarmManager.set(AlarmManager.RTC_WAKEUP, targetCal.getTimeInMillis(), pendingIntent);
 
     }
 
-
-    public void createAlarm(String message, int hour, int minutes) {
-        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM)
-                .putExtra(AlarmClock.EXTRA_MESSAGE, message)
-                .putExtra(AlarmClock.EXTRA_HOUR, hour)
-                .putExtra(AlarmClock.EXTRA_DAYS,6)
-                .putExtra(AlarmClock.EXTRA_MINUTES, minutes);
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-        }
-    }
 
     public void showDatePickerDialog(View v) {
         DialogFragment newFragment = new DatePickerFragment();
